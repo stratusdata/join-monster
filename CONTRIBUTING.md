@@ -35,6 +35,11 @@ mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'andy'@'%' WITH GRANT OPTION;"
 mysql -u andy -p -e "CREATE DATABASE test1;"
 mysql -u andy -p -e "CREATE DATABASE test2;"
 
+# install Microsoft SQL Server (via Docker), create dbs and test data
+# uncomment to install MSSQL, create schema and enable via env var in db-build
+# ./test-api/data/mssql.sh
+# export MSSQL_URL=mssql://sa:9jaf04xl.3@localhost:1433/
+
 export MYSQL_URL=mysql://andy:password@localhost/
 export PG_URL=postgres://localhost/
 

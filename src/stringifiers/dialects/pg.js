@@ -65,8 +65,7 @@ const dialect = module.exports = {
 
     const tempTable = `FROM (VALUES ${batchScope.map(val => `(${val})`)}) temp("${node.junction.sqlBatch.parentKey.name}")`
     tables.push(tempTable)
-    const lateralJoinCondition =
-      `${thisKeyOperand} = temp."${node.junction.sqlBatch.parentKey.name}"`
+    const lateralJoinCondition = `${thisKeyOperand} = temp."${node.junction.sqlBatch.parentKey.name}"`
 
     const lateralJoinOptions = { joinCondition: lateralJoinCondition, joinType: 'LEFT' }
     if (node.where || node.orderBy) {

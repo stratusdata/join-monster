@@ -14,6 +14,8 @@ if (knex.client.config.client === 'mysql') {
   options.dialect = 'pg'
 } else if (knex.client.config.client === 'oracledb') {
   options.dialect = 'oracle'
+} else if (knex.client.config.client === 'mssql') {
+  options.dialect = 'mssql';
 }
 
 import dbCall from '../data/fetch'

@@ -132,6 +132,8 @@ async function _stringifySqlAST(parent, node, prefix, context, selections, table
 
 async function handleTable(parent, node, prefix, context, selections, tables, wheres, orders, batchScope, dialect) {
   const { quote: q } = dialect
+  const tableAs = dialect.asIndicator ? dialect.asIndicator() : ''
+
   // generate the "where" condition, if applicable
   if (whereConditionIsntSupposedToGoInsideSubqueryOrOnNextBatch(node, parent)) {
     if (idx(node, _ => _.junction.where)) {
@@ -184,7 +186,7 @@ async function handleTable(parent, node, prefix, context, selections, tables, wh
     // otherwite, just a regular left join on the table
     } else {
       tables.push(
-        `LEFT JOIN ${node.name} ${q(node.as)} ON ${joinCondition}`
+        `LEFT JOIN ${node.name} ${tableAs} ${q(node.as)} ON ${joinCondition}`
       )
     }
 
@@ -205,8 +207,8 @@ async function handleTable(parent, node, prefix, context, selections, tables, wh
         await dialect.handleBatchedManyToManyPaginated(parent, node, context, tables, batchScope, joinCondition)
       } else {
         tables.push(
-          `FROM ${node.junction.sqlTable} ${q(node.junction.as)}`,
-          `LEFT JOIN ${node.name} ${q(node.as)} ON ${joinCondition}`
+          `FROM ${node.junction.sqlTable} ${tableAs} ${q(node.junction.as)}`,
+          `LEFT JOIN ${node.name} ${tableAs} ${q(node.as)} ON ${joinCondition}`
         )
         // ensures only the correct records are fetched using the value of the parent key
         wheres.push(`${q(node.junction.as)}.${q(node.junction.sqlBatch.thisKey.name)} IN (${batchScope.join(',')})`)
@@ -227,11 +229,11 @@ async function handleTable(parent, node, prefix, context, selections, tables, wh
       await dialect.handleJoinedManyToManyPaginated(parent, node, context, tables, joinCondition1, joinCondition2)
     } else {
       tables.push(
-        `LEFT JOIN ${node.junction.sqlTable} ${q(node.junction.as)} ON ${joinCondition1}`
+        `LEFT JOIN ${node.junction.sqlTable} ${tableAs} ${q(node.junction.as)} ON ${joinCondition1}`
       )
     }
     tables.push(
-      `LEFT JOIN ${node.name} ${q(node.as)} ON ${joinCondition2}`
+      `LEFT JOIN ${node.name} ${tableAs} ${q(node.as)} ON ${joinCondition2}`
     )
 
   // one-to-many with batching
@@ -248,7 +250,7 @@ async function handleTable(parent, node, prefix, context, selections, tables, wh
       // otherwite, just a regular left join on the table
     } else {
       tables.push(
-        `FROM ${node.name} ${q(node.as)}`
+        `FROM ${node.name} ${tableAs} ${q(node.as)}`
       )
       wheres.push(`${q(node.as)}.${q(node.sqlBatch.thisKey.name)} IN (${batchScope.join(',')})`)
     }
@@ -261,7 +263,7 @@ async function handleTable(parent, node, prefix, context, selections, tables, wh
   } else {
     assert(!parent, `Object type for "${node.fieldName}" table must have a "sqlJoin" or "sqlBatch"`)
     tables.push(
-      `FROM ${node.name} ${q(node.as)}`
+      `FROM ${node.name} ${tableAs} ${q(node.as)}`
     )
   }
 }

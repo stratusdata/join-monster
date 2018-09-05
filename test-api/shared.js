@@ -5,6 +5,8 @@ export function q(str, dbType) {
   case 'PG':
   case 'ORACLE':
     return `"${str}"`
+  case 'MSSQL':
+    return `[${str}]`
   default: 
     return `"${str}"`
   }

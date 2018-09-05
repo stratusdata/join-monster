@@ -6,7 +6,7 @@ const path = require('path')
 const Promise = require('bluebird')
 
 module.exports = function(db, name) {
-  const { ORACLE_URL, PG_URL, MYSQL_URL } = process.env
+  const { ORACLE_URL, PG_URL, MYSQL_URL, MSSQL_URL } = process.env
 
   if (db === 'oracle') {
     console.log('building oracle')
@@ -41,6 +41,29 @@ module.exports = function(db, name) {
     return require('knex')({
       client: 'pg',
       connection: PG_URL + name
+    })
+  }
+
+  if (db === 'mssql') {
+    assert(MSSQL_URL, 'Must provide environment variable MSSQL_URL, e.g. "mssql://user:pass@localhost:1433/"')
+ 
+    // create test db
+    const mssqlDBCmd = `docker exec -t mssql-dev /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 9jaf04xl.3 -Q "CREATE DATABASE ${name};"`
+    const dbOut = execSync(mssqlDBCmd)
+    if (dbOut.toString()) {
+      console.log(dbOut.toString())
+    }
+
+    // creation of schema is handled in ../mssql.sh which is mounted as a volume in the docker container
+    const mssqlCmd = `docker exec -t mssql-dev /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "9jaf04xl.3" -d ${name} -i /mssql.sql`
+    const out = execSync(mssqlCmd)
+    if (out.toString()) {
+      console.log(out.toString())
+    }
+
+    return require('knex')({
+      client: 'mssql',
+      connection: MSSQL_URL + name
     })
   }
 
