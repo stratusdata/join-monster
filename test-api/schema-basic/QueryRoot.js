@@ -17,6 +17,7 @@ import mysqlModule from '../../src/stringifiers/dialects/mysql'
 import oracleModule from '../../src/stringifiers/dialects/oracle'
 import pgModule from '../../src/stringifiers/dialects/pg'
 import sqlite3Module from '../../src/stringifiers/dialects/sqlite3'
+import mssqlModule from '../../src/stringifiers/dialects/mssql'
 
 import joinMonster from '../../src/index'
 
@@ -32,6 +33,8 @@ if (knex.client.config.client === 'mysql') {
   options.dialectModule = oracleModule
 } else if (knex.client.config.client === 'sqlite3') {
   options.dialectModule = sqlite3Module
+} else if (knex.client.config.client === 'mssql') {
+  options.dialectModule = mssqlModule
 }
 
 export default new GraphQLObjectType({

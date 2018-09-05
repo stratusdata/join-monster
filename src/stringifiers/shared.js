@@ -33,14 +33,16 @@ export function whereConditionIsntSupposedToGoInsideSubqueryOrOnNextBatch(node, 
 }
 
 export function keysetPagingSelect(table, whereCondition, order, limit, as, options = {}) {
-  let { joinCondition, joinType, extraJoin, q } = options
+  let { joinCondition, joinType, extraJoin, q, asIndicator } = options
   q = q || doubleQuote
+  const tableAs = asIndicator || ''
+
   whereCondition = filter(whereCondition).join(' AND ') || 'TRUE'
   if (joinCondition) {
     return `\
 ${joinType || ''} JOIN LATERAL (
   SELECT ${q(as)}.*
-  FROM ${table} ${q(as)}
+  FROM ${table} ${tableAs} ${q(as)}
   ${extraJoin ? `LEFT JOIN ${extraJoin.name} ${q(extraJoin.as)}
     ON ${extraJoin.condition}` : ''}
   WHERE ${whereCondition}
@@ -51,7 +53,7 @@ ${joinType || ''} JOIN LATERAL (
   return `\
 FROM (
   SELECT ${q(as)}.*
-  FROM ${table} ${q(as)}
+  FROM ${table} ${tableAs} ${q(as)}
   WHERE ${whereCondition}
   ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
   LIMIT ${limit}

@@ -75,7 +75,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 
 interface DialectModule { name: string }
 
-type Dialect = 'pg' | 'oracle' | 'mariadb' | 'mysql' | 'sqlite3'
+type Dialect = 'pg' | 'oracle' | 'mariadb' | 'mysql' | 'sqlite3' | 'mssql'
 type JoinMonsterOptions = { minify?: boolean, dialect?: Dialect, dialectModule?: DialectModule }
 
 type Rows = any

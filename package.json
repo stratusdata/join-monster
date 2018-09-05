@@ -14,13 +14,15 @@
     "build": "rm -rf dist && babel src --no-comments --out-dir dist --copy-files --ignore README.md",
     "watch": "rm -rf dist && babel src --watch --source-maps true --out-dir dist",
     "test": "bin/test --no-oracle",
-    "testsqlite3": "NODE_ENV=test ava test/*.js",
+    "testsqlite3": "NODE_ENV=test DB=SQLITE ava test/*.js",
     "testpg": "NODE_ENV=test DB=PG ava test/*.js",
     "testpg-paging": "NODE_ENV=test DB=PG PAGINATE=keyset ava test/pagination/keyset-paging.js && NODE_ENV=test DB=PG PAGINATE=offset ava test/pagination/offset-paging.js",
     "testoracle": "NODE_ENV=test DB=ORACLE ava test/*.js",
     "testoracle-paging": "NODE_ENV=test DB=ORACLE PAGINATE=offset ava test/pagination/offset-paging.js && NODE_ENV=test DB=ORACLE PAGINATE=keyset ava test/pagination/keyset-paging.js",
     "testmysql": "NODE_ENV=test DB=MYSQL ava test/*.js",
     "testmysql-paging": "NODE_ENV=test DB=MYSQL PAGINATE=offset ava test/pagination/offset-paging.js && NODE_ENV=test DB=MYSQL PAGINATE=keyset ava test/pagination/keyset-paging.js",
+    "testmssql": "NODE_ENV=test DB=MSSQL ava test/*.js",
+    "testmssql-paging": "NODE_ENV=test DB=MSSQL PAGINATE=offset ava test/pagination/offset-paging.js && NODE_ENV=test DB=MSSQL PAGINATE=keyset ava test/pagination/keyset-paging.js",
     "coverage": "nyc --reporter=html npm run test",
     "lint": "eslint src test",
     "start": "babel-watch ./test-api/server.js",
@@ -88,7 +90,7 @@
     "graphsiql": "0.2.0",
     "jsdoc-to-markdown": "^4.0.0",
     "kcors": "^2.2.1",
-    "knex": "^0.15.0",
+    "knex": "^0.15.2",
     "koa": "^2.0.1",
     "koa-custom-graphiql": "1.0.1",
     "koa-graphql": "^0.7.0",
@@ -106,6 +108,8 @@
     "deprecate": "^1.0.0",
     "generatorics": "^1.0.8",
     "graphql-relay": "^0.5.0",
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "mssql": "^4.1.0",
+    "tedious": "^2.6.4"
   }
 }

@@ -41,6 +41,27 @@ export PG_URL=postgres://localhost/
 npm install
 npm run db-build
 npm test
+
+# install Microsoft SQL Server (Docker) and create dbs
+```
+	# Create and start docker container
+	./test-api/data/mssql.sh
+
+	# create a MSSQL_URL env var
+	export MSSQL_URL=mssql://sa:9jaf04xl.3@localhost:1433/
+	
+	# Create test schema and data
+	DB=MSSQL node test-api/data/build.js
+```
+
+## executing MSSQL tests
+```
+	npm run testmssql
+```
+
+## running sqlcmd in an interactive command prompt
+```
+docker exec -it mssql-dev /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 9jaf04xl.3
 ```
 
 Run `npm install` and `npm run db-build` to prepare the fixture data. Check the `scripts` in the `package.json` for easily running the example data and the demo server with GraphiQL. Now you can begin coding.
