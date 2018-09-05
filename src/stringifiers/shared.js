@@ -7,7 +7,6 @@ export function joinPrefix(prefix) {
   return prefix.slice(1).map(name => name + '__').join('')
 }
 
-
 export function generateCastExpressionFromValueType(key, val) {
   const castTypes = {
     string: 'TEXT'
@@ -60,6 +59,7 @@ FROM (
 ) ${q(as)}`
 }
 
+
 export function offsetPagingSelect(table, pagingWhereConditions, order, limit, offset, as, options = {}) {
   let { joinCondition, joinType, extraJoin, q } = options
   q = q || doubleQuote
@@ -86,6 +86,15 @@ FROM (
 ) ${q(as)}`
 }
 
+export function limitAndOffsetToString(limit, offset, dialectName) {
+  if (dialectName != 'mssql')
+  {
+    return `LIMIT ${limit} OFFSET ${offset != undefined ? offset : 0}`;
+  }
+
+  return `OFFSET ${offset != undefined ? offset : 0} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+}
+
 export function orderColumnsToString(orderColumns, q, as) {
   const conditions = []
   for (let column in orderColumns) {
@@ -109,8 +118,7 @@ export function interpretForOffsetPaging(node, dialect) {
     order.table = node.junction.as
     order.columns = node.junction.orderBy
   }
-
-  let limit = [ 'mariadb', 'mysql', 'oracle' ].includes(name) ? '18446744073709551615' : 'ALL'
+  let limit = [ 'mariadb', 'mysql', 'oracle'].includes(name) ? '18446744073709551615' : name == 'mssql' ? '9223372036854775807' : 'ALL'
   let offset = 0
   if (idx(node, _ => _.args.first)) {
     limit = parseInt(node.args.first, 10)
@@ -158,7 +166,8 @@ export function interpretForKeysetPaging(node, dialect) {
     order.table = node.junction.as
   }
 
-  let limit = [ 'mariadb', 'mysql', 'oracle' ].includes(name) ? '18446744073709551615' : 'ALL'
+  let limit = [ 'mariadb', 'mysql', 'oracle'].includes(name) ? '18446744073709551615' : name == 'mssql' ? '9223372036854775807' : 'ALL'
+  
   let whereCondition = ''
   if (idx(node, _ => _.args.first)) {
     limit = parseInt(node.args.first, 10) + 1

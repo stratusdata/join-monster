@@ -11,7 +11,9 @@ const connection = process.env.NODE_ENV !== 'test' ?
       mysqlUrl(process.env.PAGINATE ? 'test2' : 'test1') :
       dbType === 'ORACLE' ?
         oracleUrl(process.env.PAGINATE ? 'test2' : 'test1') :
-        { filename: path.join(__dirname, '../data/db/test1-data.sl3') }
+        dbType === 'MSSQL' ?
+          mssqlURL(process.env.PAGINATE ? 'test2' : 'test1') :
+          { filename: path.join(__dirname, '../data/db/test1-data.sl3') }
 
 let client = 'sqlite3'
 if (process.env.NODE_ENV !== 'test') {
@@ -22,6 +24,8 @@ if (process.env.NODE_ENV !== 'test') {
   client = 'mysql'
 } else if (dbType === 'ORACLE') {
   client = 'oracledb'
+} else if (dbType === 'MSSQL') {
+  client = 'mssql'
 }
 
 console.log('connection to', { client, connection })
@@ -39,6 +43,11 @@ function pgUrl(dbName) {
 function mysqlUrl(dbName) {
   assert(process.env.MYSQL_URL, 'Environment variable MYSQL_URL must be defined, e.g. "mysql//user:pass@localhost/"')
   return process.env.MYSQL_URL + dbName
+}
+
+function mssqlURL(dbName) {
+  assert(process.env.MSSQL_URL, 'Environment variable MSSQL_URL must be defined, e.g. "mssql//user:pass@localhost/"')
+  return process.env.MSSQL_URL + dbName
 }
 
 function oracleUrl(dbName) {

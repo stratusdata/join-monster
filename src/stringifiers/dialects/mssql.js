@@ -1,6 +1,8 @@
+import { filter } from 'lodash'
 import {
+  orderColumnsToString,
+  limitAndOffsetToString,
   keysetPagingSelect,
-  offsetPagingSelect,
   interpretForOffsetPaging,
   interpretForKeysetPaging,
   generateCastExpressionFromValueType
@@ -43,14 +45,18 @@ const dialect = module.exports = {
             joinCondition,
             joinType: 'LEFT',
             q: this.quote,
-            asIndicator: this.asIndicator()
+            asIndicator: this.asIndicator(),
+            dialectName: this.name
           })
       )
     } else if (node.orderBy) {
       const { limit, offset, order } = interpretForOffsetPaging(node, dialect)
       tables.push(
-        offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as, {
-          joinCondition, joinType: 'LEFT'
+        this.offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as, {
+          joinCondition,
+          joinType: 'LEFT',
+          dialectName: this.name,
+          q: this.quote
         })
       )
     }
@@ -82,7 +88,8 @@ const dialect = module.exports = {
       joinCondition: lateralJoinCondition,
       joinType: 'LEFT',
       q: this.quote,
-      asIndicator: this.asIndicator()
+      asIndicator: this.asIndicator(),
+      dialectName: this.name
     }
 
     if (node.where || node.orderBy) {
@@ -101,7 +108,7 @@ const dialect = module.exports = {
     } else if (node.orderBy || node.junction.orderBy) {
       const { limit, offset, order } = interpretForOffsetPaging(node, dialect)
       tables.push(
-        offsetPagingSelect(
+        this.offsetPagingSelect(
           node.junction.sqlTable, pagingWhereConditions, order,
           limit, offset, node.junction.as, lateralJoinOptions
         )
@@ -129,7 +136,8 @@ const dialect = module.exports = {
       joinCondition: joinCondition1,
       joinType: 'LEFT',
       q: this.quote,
-      asIndicator: this.asIndicator()
+      asIndicator: this.asIndicator(),
+      dialectName: this.name
     }
 
     if (node.where || node.orderBy) {
@@ -148,7 +156,7 @@ const dialect = module.exports = {
     } else if (node.orderBy || node.junction.orderBy) {
       const { limit, offset, order } = interpretForOffsetPaging(node, dialect)
       tables.push(
-        offsetPagingSelect(
+        this.offsetPagingSelect(
           node.junction.sqlTable, pagingWhereConditions, order,
           limit, offset, node.junction.as, lateralJoinOptions
         )
@@ -174,7 +182,8 @@ const dialect = module.exports = {
           node.as,
           {
             q: this.quote,
-            asIndicator: this.asIndicator()
+            asIndicator: this.asIndicator(),
+            dialectName: this.name
           })
       )
     } else if (node.orderBy) {
@@ -185,7 +194,7 @@ const dialect = module.exports = {
         )
       }
       tables.push(
-        offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as)
+        this.offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as, { q: this.quote, dialectName: this.name })
       )
     }
   },
@@ -216,16 +225,45 @@ const dialect = module.exports = {
           {
             joinCondition: lateralJoinCondition,
             q: this.quote,
-            asIndicator: this.asIndicator()
+            asIndicator: this.asIndicator(),
+            dialectName: this.name
           })
       )
     } else if (node.orderBy) {
       const { limit, offset, order } = interpretForOffsetPaging(node, dialect)
       tables.push(
-        offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as, {
-          joinCondition: lateralJoinCondition
+        this.offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as, {
+          joinCondition: lateralJoinCondition,
+          dialectName: this.name,
+          q: this.quote
         })
       )
     }
+  },
+
+  offsetPagingSelect: function(table, pagingWhereConditions, order, limit, offset, as, options = {}) {
+    let { joinCondition, joinType, extraJoin, dialectName } = options
+    const q = this.quote
+    const whereCondition = filter(pagingWhereConditions).join(' AND ') || '1>0'
+    if (joinCondition) {
+      return `\
+      CROSS APPLY (
+          SELECT ${q(as)}.*, count(*) OVER () AS ${q('$total')}
+          FROM ${table} ${q(as)}
+          ${extraJoin ? `LEFT JOIN ${extraJoin.name} ${q(extraJoin.as)}
+            ON ${extraJoin.condition}` : ''}
+          WHERE ${whereCondition}
+          ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
+          ${limitAndOffsetToString(limit, offset, dialectName)}
+        ) ${q(as)}${dialectName == 'mssql' ? '' : ` ON ${joinCondition}`}`
+    }
+    return `\
+      FROM (
+        SELECT ${q(as)}.*, count(*) OVER () AS ${q('$total')}
+        FROM ${table} ${q(as)}
+        WHERE ${whereCondition}
+        ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
+        ${limitAndOffsetToString(limit, offset, dialectName)}
+      ) ${q(as)}`
   }
 }
