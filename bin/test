@@ -28,6 +28,9 @@ do
     -s|--no-sqlite)
       SQLITE=0
     ;;
+    -b|--no-mssql)
+      MSSQL=0
+    ;;
     *)
       echo unrecognized option $1
       exit 1

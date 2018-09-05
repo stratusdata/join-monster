@@ -1,11 +1,6 @@
 const assert = require('assert')
 const { env } = process;
 
-if (!env.DB || env.DB === 'MSSQL')
-{
-  assert(process.env.MSSQL_URL, 'Environment variable MSSQL_URL must be defined, e.g. "mysql://user:pass@localhost/"')
-}
-
 if (!env.DB || env.DB === 'PG')
 {
   assert(process.env.PG_URL, 'Environment variable PG_URL must be defined, e.g. "postgres://user:pass@localhost/"')
@@ -21,7 +16,8 @@ if (!env.DB || env.DB === 'MYSQL')
   //await require('./setup/test1')('oracle')
   //await require('./setup/test2')('oracle')
 
-  if (!env.DB || env.DB === 'MSSQL')
+  // only build if MSSQL_URL is available
+  if ((!env.DB || env.DB === 'MSSQL') && env.MSSQL_URL)
   {
     console.log('building mssql')
     await require('./setup/test1')('mssql');
